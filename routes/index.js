@@ -5,7 +5,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.end(JSON.stringify(fs));
+  res.end(JSON.stringify(["Swetabh","Suman"]));
 });
 
 module.exports = router;
