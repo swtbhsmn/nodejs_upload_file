@@ -29,9 +29,10 @@ uploadRouter.use(bodyParser.json());
 uploadRouter.route('/')
 .options(cors.corsWithOptions,(req,res)=>{res.statusCode=200;})
 .get(cors.cors,(req,res)=>{
-    res.end("Uplad Not Valid!");
+    res.end("Upload Not Valid!");
 })
 .post(cors.corsWithOptions,upload.single("upload_file"),(req,res)=>{
+console.log(req.body);
   res.statusCode = 200;
   res.setHeader('Content-Type',"application/json");
   res.send({status:"Successfully File Uploaded",fileInfo:req.file});
