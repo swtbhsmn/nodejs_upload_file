@@ -5,11 +5,13 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const cors = require('./cors');
 var User = require('../models/m_users');
+var UserRide = require('../models/ride_model');
 var authentication = require('../authentication');
 router.use(bodyParser.json());
 
 const multer = require("multer");
 const { verify } = require('jsonwebtoken');
+const { json } = require('express');
 
 const storage = multer.diskStorage(
   {
@@ -88,7 +90,7 @@ router.route('/login')
 
     var token = authentication.getToken({ _id: req.user._id });
 
-    User.findOne({ _id: req.user._id  }, (err, user) => {
+    User.findOne({ _id: req.user._id }, (err, user) => {
 
       if (err) {
 
@@ -99,18 +101,19 @@ router.route('/login')
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json({
+          _id: user._id,
           firstname: user.firstname,
           lastname: user.lastname,
           username: user.username,
           photo: `http://localhost:3001/uploads/${user.photo}`,
-          success: true, token: token, status: 'You are successfully logged in!' 
+          success: true, token: token, status: 'You are successfully logged in!'
         });
 
       }
     })
 
- 
- 
+
+
   });
 
 router.route('/userprofile')
@@ -138,5 +141,52 @@ router.route('/userprofile')
 
   });
 
+
+router.route('/addride')
+  .options(cors.corsWithOptions, (req, res) => { res.statusCode = 200; })
+  .post(cors.corsWithOptions, authentication.verifyUser, function (req, res, next) {
+    console.log(req.body);
+
+    const data = new UserRide(req.body);
+    data.save((err, user) => {
+      console.log(user);
+      if (err) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+
+        res.json({ err: err });
+        return;
+      }
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ success: true, status: 'Your Ride Added Successfully' });
+    });
+
+  });
+
+
+router.route('/showride')
+  .options(cors.corsWithOptions, (req, res) => { res.statusCode = 200; })
+  .get(cors.corsWithOptions, authentication.verifyUser, function (req, res, next) {
+
+    UserRide.find({ username: req.user.username }).then((users) => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json(users);
+    })
+
+});
+
+router.route('/bookride')
+  .options(cors.corsWithOptions, (req, res) => { res.statusCode = 200; })
+  .post(cors.corsWithOptions, function (req, res, next) {
+
+    UserRide.find({ location:req.body.location,destination:req.body.destination}).then((users) => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json(users);
+    })
+
+});
 
 module.exports = router;
